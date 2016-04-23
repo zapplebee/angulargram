@@ -43,8 +43,4 @@ function getNumberOfPosts(qty,callback){
   tally();
   
 }
-module.exports = function(qty,doCallback){
-
-  getNumberOfPosts(qty,doCallback);
-
-}
+module.exports = getNumberOfPosts;
