@@ -1,0 +1,27 @@
+{
+  "name": "angulargram",
+  "version": "0.0.1",
+  "description": "An Angular interface for the Instagram API.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zapplebee/angulargram.git"
+  },
+  "keywords": [
+    "angular",
+    "instagram"
+  ],
+  "author": "Zachary Skalko",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/zapplebee/angulargram/issues"
+  },
+  "homepage": "https://github.com/zapplebee/angulargram#readme",
+  "dependencies": {
+    "express": "^4.13.4",
+    "https": "^1.0.0"
+  }
+}
