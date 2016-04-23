@@ -32,7 +32,6 @@ function getNumberOfPosts(qty,callback){
       }
       
       if(posts.length < qty){
-        console.log(instagramObject.pagination);
         getPosts(tally,instagramObject.pagination.next_max_id);
       }else{
         callback(posts.slice(0, qty));
