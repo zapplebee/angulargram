@@ -42,4 +42,10 @@ function getNumberOfPosts(qty,callback){
   tally();
   
 }
-module.exports = getNumberOfPosts;
+module.exports = {
+  
+getQty: getNumberOfPosts,
+
+get: function(callback){getPosts(function(instagramObject){callback(instagramObject.data)})}
+
+}
