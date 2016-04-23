@@ -1,6 +1,5 @@
-            var https = require('https');
-            var instagramCredentials = require('../instagramCredentials.js');
-
+var https = require('https');
+var instagramCredentials = require('../instagramCredentials.js');
             
 function getPosts(callback,pagination){
 
@@ -12,11 +11,8 @@ function getPosts(callback,pagination){
       callback(instagramObject); 
     });
   }
-  if(!pagination){
-    https.request({ host: 'api.instagram.com',  path: '/v1/users/self/media/recent/?access_token=' + instagramCredentials.ACCESS_TOKEN }, handleResponse).end();
-  }else{
-    https.request({ host: 'api.instagram.com',  path: '/v1/users/self/media/recent/?access_token=' + instagramCredentials.ACCESS_TOKEN + '&max_id=' + pagination}, handleResponse).end();
-  }
+
+  https.request({ host: 'api.instagram.com',  path: '/v1/users/self/media/recent/?access_token=' + instagramCredentials.ACCESS_TOKEN + (pagination ? '&max_id=' + pagination : "")}, handleResponse).end();
 }
 
 function getNumberOfPosts(qty,callback){
