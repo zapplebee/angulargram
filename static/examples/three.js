@@ -13,14 +13,15 @@ app.directive('angulargram', function($http) {
       
       function getImages(posts){
         for(var i = 0 ; i < posts.length ; i++){
-          images.push(posts[i].images.thumbnail.url);
+          images[i % 2 ? "push" : "unshift"](posts[i].images.thumbnail.url)
         }
+        
         doLoadTextures();
       }
       
       var renderer = new THREE.WebGLRenderer(),
         scene = new THREE.Scene(),
-        camera = new THREE.PerspectiveCamera( 60, window.innerWidth / window.innerHeight, 0.1, 10 );
+        camera = new THREE.PerspectiveCamera( 55, window.innerWidth / window.innerHeight, 0.1, 10 );
         camera.position.z -= 3;
         truncatedSphere = new THREE.Object3D();
         
@@ -28,7 +29,7 @@ app.directive('angulargram', function($http) {
         scene.add(truncatedSphere);
         
       function initScene(){
-        camera.position.z = 0;
+        camera.position.z = 3;
         var light = new THREE.PointLight( 0xffffff, .7, 0 );
         light.position.set( 0, 0, 0 );
         scene.add( light );
