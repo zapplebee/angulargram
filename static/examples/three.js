@@ -20,7 +20,8 @@ app.directive('angulargram', function($http) {
       
       var renderer = new THREE.WebGLRenderer(),
         scene = new THREE.Scene(),
-        camera = new THREE.PerspectiveCamera( 70, e.offsetWidth / e.offsetHeight, 0.1, 10 );
+        camera = new THREE.PerspectiveCamera( 60, window.innerWidth / window.innerHeight, 0.1, 10 );
+        camera.position.z -= 3;
         truncatedSphere = new THREE.Object3D();
         
         console.log(truncatedSphere.scale.x);
@@ -28,10 +29,22 @@ app.directive('angulargram', function($http) {
         
       function initScene(){
         camera.position.z = 0;
-        var light = new THREE.PointLight( 0xffffff, .4, 0 );
+        var light = new THREE.PointLight( 0xffffff, .7, 0 );
         light.position.set( 0, 0, 0 );
         scene.add( light );
         renderer.domElement.style = "-moz-transform: scale(-1, 1);-webkit-transform: scale(-1, 1);-o-transform: scale(-1, 1);transform: scale(-1, 1);filter: FlipH;";
+        
+        window.addEventListener('resize',updateSize, false)
+        
+        function updateSize(){
+          camera.aspect = window.innerWidth / window.innerHeight;
+          camera.updateProjectionMatrix();
+          renderer.setSize( window.innerWidth, window.innerHeight );
+        }
+        
+        updateSize();
+        
+        
         element.append( renderer.domElement );
       }
       
@@ -68,15 +81,11 @@ app.directive('angulargram', function($http) {
         
         function textureLoaded(texture,index){
           console.log(texture.image);
-          var material = new THREE.MeshPhongMaterial({ map: texture, side: THREE.DoubleSide });
-          //var material = new THREE.MeshPhongMaterial({ color: '#FBA000', side: THREE.DoubleSide });
+          var material = new THREE.MeshPhongMaterial({ map: texture, side: THREE.BackSide });
           var vert = Math.floor(index / 16) + 2;
           var pane = new THREE.SphereGeometry( 5, 1, 1, (index % 16) * (Math.PI/ 8), Math.PI/ 8, vert * (Math.PI / 8), Math.PI / 8);
           var mesh = new THREE.Mesh(pane, material);
-
-            //mesh.position.z = mesh.position.z * -1;
- 
-          
+    
           truncatedSphere.add(mesh);
           
         }
@@ -84,7 +93,7 @@ app.directive('angulargram', function($http) {
       }
       
       function loop(){
-        renderer.setSize( e.offsetWidth, e.offsetHeight );
+        
         truncatedSphere.rotation.y -= 0.005;
 
         renderer.render( scene, camera );
