@@ -30,7 +30,7 @@ app.directive('angulargram', function($http) {
         
       function initScene(){
         camera.position.z = 3;
-        var light = new THREE.PointLight( 'rgb(140,140,255)', .7, 0 );
+        var light = new THREE.PointLight( 'rgb(140,140,255)', .2, 0 );
         light.position.set( 0, 0, 0 );
         scene.add( light );
         renderer.domElement.style = "-moz-transform: scale(-1, 1);-webkit-transform: scale(-1, 1);-o-transform: scale(-1, 1);transform: scale(-1, 1);filter: FlipH;";
@@ -94,7 +94,7 @@ app.directive('angulargram', function($http) {
       
       function loop(){
         
-        truncatedSphere.rotation.y -= 0.002;
+        truncatedSphere.rotation.y -= 0.001;
 
         renderer.render( scene, camera );
         window.requestAnimationFrame(loop);
