@@ -1,5 +1,4 @@
 var app = angular.module('angulargram',[]);
-
 app.directive('angulargram', function($http) {
   return {
     
@@ -12,101 +11,76 @@ app.directive('angulargram', function($http) {
       
       function getImages(posts){
         for(var i = 0 ; i < posts.length ; i++){
-          images.push(posts[i].images.low_resolution.url);
+          images.push(posts[i].images.thumbnail.url);
         }
         
         doLoadTextures();
       }
       
-      
       var renderer = new THREE.WebGLRenderer(),
-        scene = new THREE.Scene();
-        camera = new THREE.PerspectiveCamera( 75, e.offsetWidth / e.offsetHeight, 0.1, 1000 );
-      
-
-      function createScene(){
-
-        camera.position.z = 6;
-        var ambientLight = new THREE.AmbientLight( 0x000000 );
-        scene.add( ambientLight );
-
-        var lights = [];
-        lights[ 0 ] = new THREE.PointLight( 0xffffff, 1, 0 );
-        lights[ 1 ] = new THREE.PointLight( 0xffffff, 1, 0 );
-        lights[ 2 ] = new THREE.PointLight( 0xffffff, 1, 0 );
-
-        lights[ 0 ].position.set( 0, 200, 0 );
-        lights[ 1 ].position.set( 100, 200, 100 );
-        lights[ 2 ].position.set( - 100, - 200, - 100 );
-
-        scene.add( lights[ 0 ] );
-        scene.add( lights[ 1 ] );
-        scene.add( lights[ 2 ] );
-      
+        scene = new THREE.Scene(),
+        camera = new THREE.PerspectiveCamera( 70, e.offsetWidth / e.offsetHeight, 0.1, 1000 );
         
-        
+      function initScene(){
+        camera.position.z = 0;
+        var light = new THREE.PointLight( 0xffffff, .4, 0 );
+        light.position.set( 0, 0, -3 );
+        scene.add( light );
         element.append( renderer.domElement );
         
       }
       
-      
-      createScene();
+      initScene();
       
       function doLoadTextures(){
         
+        var index = 0;
         
-        
-        
-        var x = new THREE.TextureLoader;      
-        x.crossOrigin = "Anonymous";      
-        x.load(
-          images[0],
-          function(r){
-            textureLoaded(r)
-          },
-          function() {
-            console.log('progress')
-          },
-          function(){
-            console.log('error')
-          }
-        );
-
-        
-        function textureLoaded(texture){
-          console.log(texture);
-          var material = new THREE.MeshPhongMaterial({ 
-          map: texture 
-          //color : "#fba000"
-          });
-          var geometry = new THREE.PlaneGeometry( 5, 5, 20 );
-
-          var mesh = new THREE.Mesh(geometry, material);
-          mesh.rotation.x = 0.4;
-          console.log(mesh);
-          scene.add(mesh);
-          console.log(scene);
+        function loadOneTexture(i){
+          var textureLoader = new THREE.TextureLoader;      
+          textureLoader.crossOrigin = "Anonymous";
+          textureLoader.load(
+            images[i],
+            function(texture){
+              console.log(texture);
+              texture.mapping = THREE.SphericalReflectionMapping;
+              
+              textureLoaded(texture,i)
+              console.log('texture loaded: ' + i);
+              if(++index < images.length){
+                loadOneTexture(index);
+              }
+            },
+            function() {
+              console.log('progress')
+            },
+            function(){
+              console.log('error')
+            }
+          );
         }
         
-        textureLoaded();
+        loadOneTexture(index);
         
+        function textureLoaded(texture,index){
+          var material = new THREE.MeshPhongMaterial({ map: texture, side: THREE.BackSide });
+          var vert = Math.floor(index / 16) + 2;
+          var sphere = new THREE.SphereGeometry( 5, 1, 1, (index % 16) * (Math.PI/ 8), Math.PI/ 8, vert * (Math.PI / 8), Math.PI / 8);
+          var mesh = new THREE.Mesh(sphere, material);
+          
+          scene.add(mesh);
+        }
         
       }
       
-      
-      
-      
-      
-      
-      
       function loop(){
-
         renderer.setSize( e.offsetWidth, e.offsetHeight );
+        camera.rotation.y -= 0.005;
         renderer.render( scene, camera );
         window.requestAnimationFrame(loop);
       }
       window.requestAnimationFrame(loop);
-
+      
       $http({
         method: 'GET',
         url: '/instagram.json?qty=' + qty
@@ -115,7 +89,6 @@ app.directive('angulargram', function($http) {
               }, function errorCallback(response) {
                 scope.error = response;
               });
-
     }
     
   }
