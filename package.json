@@ -1,25 +1,24 @@
 {
-  "name": "angulargram",
+  "name": "nodeinstagram",
   "version": "0.0.1",
-  "description": "An Angular interface for the Instagram API.",
+  "description": "A Node.js interface for the Instagram API.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/zapplebee/angulargram.git"
+    "url": "git+https://github.com/zapplebee/node-instagram.git"
   },
   "keywords": [
-    "angular",
+    "node",
     "instagram"
   ],
   "author": "Zachary Skalko",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/zapplebee/angulargram/issues"
+    "url": "https://github.com/zapplebee/node-instagram/issues"
   },
-  "homepage": "https://github.com/zapplebee/angulargram#readme",
+  "homepage": "https://github.com/zapplebee/node-instagram#readme",
   "dependencies": {
     "express": "^4.13.4",
     "https": "^1.0.0"
