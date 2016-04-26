@@ -5,53 +5,54 @@ app.directive('angulargram', function($http) {
     restrict: "C",
     link(scope,element){
 
+      //main function handles everything except detecting webGL and adding fallback
       var main = function(){
       
+        //declare 
+        //get the DOM element from the angular element
         var e = element[0];
         var qty = 64;
         var images = [];
+        var renderer = new THREE.WebGLRenderer();
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera( 55, window.innerWidth / window.innerHeight, 0.1, 10 );
+          camera.position.z = 3;
+        var truncatedSphere = new THREE.Object3D();
+          scene.add(truncatedSphere);
 
-        function getImages(posts){
+        var light = new THREE.PointLight( 'rgb(140,140,255)', .2, 0 );
+          light.position.set( 0, 0, 0 );
+          scene.add( light );
+
+        window.addEventListener('resize',updateSize, false)
+
+        function updateSize(){
+          camera.aspect = window.innerWidth / window.innerHeight;
+          camera.updateProjectionMatrix();
+          renderer.setSize( window.innerWidth, window.innerHeight );
+        }
+
+        updateSize();
+        element.append( renderer.domElement );
+
+        $http({ method: 'GET', url: '/instagram.json?qty=' + qty }).then(getImages, doFallback );
+        
+        function getImages(instagramObject){
+          var posts = instagramObject.data;
+          //parse the data object from $http and start to load the textures
           for(var i = 0 ; i < posts.length ; i++){
+            //move new posts to the middle of the array
             images[i % 2 ? "push" : "unshift"](posts[i].images.thumbnail.url)
           }
           doLoadTextures();
         }
 
-        var renderer = new THREE.WebGLRenderer(),
-          scene = new THREE.Scene(),
-          camera = new THREE.PerspectiveCamera( 55, window.innerWidth / window.innerHeight, 0.1, 10 );
-        camera.position.z -= 3;
-        var truncatedSphere = new THREE.Object3D();
-        scene.add(truncatedSphere);
-
-        function initScene(){
-          camera.position.z = 3;
-          var light = new THREE.PointLight( 'rgb(140,140,255)', .2, 0 );
-          light.position.set( 0, 0, 0 );
-          scene.add( light );
-
-          window.addEventListener('resize',updateSize, false)
-
-          function updateSize(){
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize( window.innerWidth, window.innerHeight );
-          }
-
-          updateSize();
-
-
-          element.append( renderer.domElement );
-        }
-
-        initScene();
 
         function doLoadTextures(){
 
           var index = 0;
           var textureLoader = new THREE.TextureLoader;
-          textureLoader.crossOrigin = "Anonymous";
+          textureLoader.crossOrigin = "";
 
           function loadOneTexture(i){
 
@@ -61,23 +62,21 @@ app.directive('angulargram', function($http) {
                 if(++index < images.length){
                   loadOneTexture(index);
                 }
-                console.log(texture);
-                textureLoaded(texture,i)
-                console.log('texture loaded: ' + i);
+                handleLoadedTexture(texture,i)
 
               },
               function() {
-                console.log('progress')
+                //progress
               },
               function(){
-                console.log('error')
+                doFallback();
               }
             );
           }
 
           loadOneTexture(index);
 
-          function textureLoaded(texture,index){
+          function handleLoadedTexture(texture,index){
 
             //the texture needs to be mirrored horizontally since we see the back side of the sphere.
             //three.js's methods don't seem to work, so make a canvas and do it ourselves.
@@ -104,27 +103,16 @@ app.directive('angulargram', function($http) {
         }
 
         function loop(){
-
           truncatedSphere.rotation.y += 0.001;
-
           renderer.render( scene, camera );
           window.requestAnimationFrame(loop);
         }
+        loop();
 
-
-        window.requestAnimationFrame(loop);
-
-        $http({
-            method: 'GET',
-            url: '/instagram.json?qty=' + qty
-          }).then(function successCallback(response) {
-                    getImages(response.data);
-                  }, function errorCallback(response) {
-                    scope.error = response;
-                  });
 
     }
 
+    
       function webglAvailable() {
         try {
           var canvas = document.createElement("canvas");
@@ -139,13 +127,11 @@ app.directive('angulargram', function($http) {
 
 
 
-
+      
       if(webglAvailable()){
         main();
       } else {
-        element.addClass('angulargram-fallback');
-
-
+        doFallback();
       }
     }
 
