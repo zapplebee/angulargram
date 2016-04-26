@@ -116,6 +116,10 @@ app.directive('angulargram', function($http) {
 
       }
 
+      function doFallback(){
+        element.addClass('angulargram-fallback');
+      }
+      
       function webglAvailable() {
         try {
           var canvas = document.createElement("canvas");
