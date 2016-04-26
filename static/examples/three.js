@@ -3,71 +3,73 @@ var truncatedSphere;
 var app = angular.module('angulargram',[]);
 app.directive('angulargram', function($http) {
   return {
-    
+
     restrict: "C",
     link(scope,element){
-      
+
+      var main = function(){
+    
       var e = element[0];
       var qty = 64;
       var images = [];
-      
+
       function getImages(posts){
         for(var i = 0 ; i < posts.length ; i++){
           images[i % 2 ? "push" : "unshift"](posts[i].images.thumbnail.url)
         }
-        
+
         doLoadTextures();
       }
-      
+
       var renderer = new THREE.WebGLRenderer(),
         scene = new THREE.Scene(),
         camera = new THREE.PerspectiveCamera( 55, window.innerWidth / window.innerHeight, 0.1, 10 );
         camera.position.z -= 3;
         truncatedSphere = new THREE.Object3D();
-        
+
         console.log(truncatedSphere.scale.x);
         scene.add(truncatedSphere);
-        
+
       function initScene(){
         camera.position.z = 3;
         var light = new THREE.PointLight( 'rgb(140,140,255)', .2, 0 );
         light.position.set( 0, 0, 0 );
         scene.add( light );
-        renderer.domElement.style = "-moz-transform: scale(-1, 1);-webkit-transform: scale(-1, 1);-o-transform: scale(-1, 1);transform: scale(-1, 1);filter: FlipH;";
-        
+
         window.addEventListener('resize',updateSize, false)
-        
+
         function updateSize(){
           camera.aspect = window.innerWidth / window.innerHeight;
           camera.updateProjectionMatrix();
           renderer.setSize( window.innerWidth, window.innerHeight );
         }
-        
+
         updateSize();
-        
-        
+
+
         element.append( renderer.domElement );
       }
-      
+
       initScene();
-      
+
       function doLoadTextures(){
-        
+
         var index = 0;
-        var textureLoader = new THREE.TextureLoader;      
+        var textureLoader = new THREE.TextureLoader;
         textureLoader.crossOrigin = "Anonymous";
-        
+
         function loadOneTexture(i){
-          
+
           textureLoader.load(
             images[i],
             function(texture){
-              console.log(texture);
-              textureLoaded(texture,i)
-              console.log('texture loaded: ' + i);
               if(++index < images.length){
                 loadOneTexture(index);
               }
+              console.log(texture);
+              textureLoaded(texture,i)
+              console.log('texture loaded: ' + i);
+
             },
             function() {
               console.log('progress')
@@ -77,39 +79,80 @@ app.directive('angulargram', function($http) {
             }
           );
         }
-        
+
         loadOneTexture(index);
-        
+
         function textureLoaded(texture,index){
-          console.log(texture.image);
+
+          //the texture needs to be mirrored horizontally since we see the back side of the sphere.
+          //three.js's methods don't seem to work, so make a canvas and do it ourselves.
+
+          var flipCanvas = document.createElement('canvas');
+          flipCanvas.height = 150;
+          flipCanvas.width = 150;
+          var flipCanvasContext = flipCanvas.getContext('2d');
+          flipCanvasContext.translate(150, 0);
+          flipCanvasContext.scale(-1, 1);
+          flipCanvasContext.drawImage(texture.image, 0, 0);
+          var flippedImg = document.createElement('img');
+          flippedImg.src = flipCanvas.toDataURL("image/jpg");
+          texture.image = flippedImg;
+
           var material = new THREE.MeshPhongMaterial({ map: texture, side: THREE.BackSide });
           var vert = Math.floor(index / 16) + 2;
           var pane = new THREE.SphereGeometry( 7, 1, 1, (index % 16) * (Math.PI/ 8), Math.PI/ 8, vert * (Math.PI / 8), Math.PI / 8);
           var mesh = new THREE.Mesh(pane, material);
           truncatedSphere.add(mesh);
-          
+
         }
-        
+
       }
-      
+
       function loop(){
-        
-        truncatedSphere.rotation.y -= 0.001;
+
+        truncatedSphere.rotation.y += 0.001;
 
         renderer.render( scene, camera );
         window.requestAnimationFrame(loop);
       }
-      window.requestAnimationFrame(loop);
       
+      
+      window.requestAnimationFrame(loop);
+
       $http({
-        method: 'GET',
-        url: '/instagram.json?qty=' + qty
-      }).then(function successCallback(response) {
-                getImages(response.data);
-              }, function errorCallback(response) {
-                scope.error = response;
-              });
+          method: 'GET',
+          url: '/instagram.json?qty=' + qty
+        }).then(function successCallback(response) {
+                  getImages(response.data);
+                }, function errorCallback(response) {
+                  scope.error = response;
+                });
+      
     }
-    
+      
+      function webglAvailable() {
+        try {
+          var canvas = document.createElement("canvas");
+          return !!
+            window.WebGLRenderingContext && 
+            (canvas.getContext("webgl") || 
+                canvas.getContext("experimental-webgl"));
+        } catch(e) { 
+          return false;
+        } 
+      }
+      
+      
+      
+      
+      if(webglAvailable()){
+        main();
+      } else {
+        element.addClass('angulargram-fallback');
+        
+        
+      }
+    }
+
   }
 });
